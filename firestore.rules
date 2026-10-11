@@ -1,0 +1,141 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+    function isAdmin() { return signedIn() && (role() == 'ADMIN' || role() == 'SUPER_ADMIN'); }
+    function isSuperAdmin() { return signedIn() && role() == 'SUPER_ADMIN'; }
+    function isMentor() { return signedIn() && (role() == 'MENTOR' || role() == 'SENIOR'); }
+    function isStudent() { return signedIn() && (role() == 'STUDENT' || role() == 'JUNIOR'); }
+    function me() { return request.auth.uid; }
+    function studentDoc() { return get(/databases/$(database)/documents/students/$(request.auth.uid)).data; }
+    function mentorDoc() { return get(/databases/$(database)/documents/mentors/$(request.auth.uid)).data; }
+
+    function mentorKeys() {
+      return ['all:*', 'mentors:*', 'all:' + mentorDoc().batchId, 'mentors:' + mentorDoc().batchId, 'mentor:' + me()];
+    }
+    function studentKeys() {
+      return ['all:*', 'students:*', 'all:' + studentDoc().batchId, 'students:' + studentDoc().batchId]
+        .concat(studentDoc().mentorId == null ? [] : ['mentor:' + studentDoc().mentorId]);
+    }
+
+    match /users/{uid} {
+      allow read: if isAdmin() || (signedIn() && me() == uid) || isMentor();
+      allow write: if isAdmin();
+    }
+
+    match /batches/{batchId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /weeks/{weekId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /mentors/{uid} {
+      allow read: if signedIn();
+      allow write: if isAdmin() || (signedIn() && me() == uid);
+    }
+
+    match /students/{uid} {
+      allow read: if signedIn();
+      allow update: if isAdmin() || isMentor() || (signedIn() && me() == uid);
+      allow create, delete: if isAdmin();
+    }
+
+    match /profiles/{uid} {
+      allow read: if signedIn();
+      allow write: if (signedIn() && me() == uid) || isAdmin();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if signedIn();
+      allow write: if isAdmin() || isMentor();
+    }
+
+    match /assignments/{id} {
+      allow read: if isAdmin()
+        || (isMentor() && (resource.data.get('mentorId', '') == me() || resource.data.get('seniorUid', '') == me()))
+        || (isStudent() && (resource.data.get('studentId', '') == me() || resource.data.get('juniorUid', '') == me()));
+      allow create, update: if isAdmin() || isMentor()
+        || (isStudent() && (resource.data.get('studentId', '') == me() || resource.data.get('juniorUid', '') == me()));
+      allow delete: if isAdmin() || isMentor();
+    }
+
+    match /submissions/{id} {
+      allow read: if isAdmin()
+        || isMentor()
+        || (isStudent() && (resource.data.get('studentId', '') == me() || resource.data.get('juniorUid', '') == me()));
+      allow create, update: if isStudent() || isMentor() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Problem of the Day (POTD) — assigned daily by a mentor, accessible to all students
+    match /potd/{id} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+
+    // POTD Submissions — tracks which students solved which daily problems
+    match /potd_submissions/{id} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+
+    // Confidential Complaints Box:
+    // - Student complaints (to trainer/mentor/programme) are visible ONLY to Admin and the Student who filed it.
+    // - Mentor complaints are visible ONLY to Admin and the Mentor who filed it.
+    match /complaints/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.get('authorUid', '') == me());
+      allow create: if signedIn() && request.resource.data.get('authorUid', '') == me();
+      allow update: if isAdmin() || (signedIn() && resource.data.get('authorUid', '') == me());
+      allow delete: if isAdmin();
+    }
+
+    match /verifications/{id} {
+      allow read: if isAdmin()
+        || isMentor()
+        || (isStudent() && (resource.data.get('juniorUid', '') == me() || resource.data.get('studentId', '') == me()));
+      allow write: if isMentor() || isAdmin();
+    }
+
+    match /mocks/{id} {
+      allow read: if isAdmin()
+        || isMentor()
+        || (isStudent() && (resource.data.get('juniorUid', '') == me() || resource.data.get('studentId', '') == me()));
+      allow write: if isMentor() || isAdmin();
+    }
+
+    // Notifications system (Mentor, Student, Admin)
+    match /notifications/{id} {
+      allow read: if signedIn() && (resource.data.userId == me() || isAdmin());
+      allow create: if signedIn();
+      allow update: if signedIn() && (resource.data.userId == me() || isAdmin());
+      allow delete: if signedIn() && (resource.data.userId == me() || isAdmin());
+    }
+
+    match /announcements/{id} {
+      allow read: if isAdmin()
+        || (isMentor() && resource.data.audienceKeys.hasAny(mentorKeys()))
+        || (isStudent() && resource.data.audienceKeys.hasAny(studentKeys()));
+      allow write: if isAdmin() || isMentor();
+    }
+
+    match /imports/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /auditLogs/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() || isMentor();
+    }
+
+    match /uniques/{id} { allow read, write: if isAdmin(); }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

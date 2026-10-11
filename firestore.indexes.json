@@ -1,0 +1,20 @@
+{
+  "indexes": [
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "ASCENDING" } ] },
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "studentId", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "ASCENDING" } ] },
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "studentId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "ASCENDING" } ] },
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "mentorId", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "DESCENDING" } ] },
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "taskId", "order": "ASCENDING" }, { "fieldPath": "studentName", "order": "ASCENDING" } ] },
+    { "collectionGroup": "submissions", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "studentId", "order": "ASCENDING" }, { "fieldPath": "submittedAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "submissions", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "mentorId", "order": "ASCENDING" }, { "fieldPath": "submittedAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "submissions", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "mentorId", "order": "ASCENDING" }, { "fieldPath": "reviewStatus", "order": "ASCENDING" }, { "fieldPath": "submittedAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "submissions", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "reviewStatus", "order": "ASCENDING" }, { "fieldPath": "submittedAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "students", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "mentorId", "order": "ASCENDING" }, { "fieldPath": "studentCode", "order": "ASCENDING" } ] },
+    { "collectionGroup": "students", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "batchId", "order": "ASCENDING" }, { "fieldPath": "studentCode", "order": "ASCENDING" } ] },
+    { "collectionGroup": "tasks", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "batchId", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "DESCENDING" } ] },
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "isRead", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "announcements", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "audienceKeys", "arrayConfig": "CONTAINS" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] }
+  ],
+  "fieldOverrides": []
+}

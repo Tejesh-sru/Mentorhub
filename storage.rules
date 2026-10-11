@@ -1,0 +1,34 @@
+rules_version = '2';
+
+// Firebase Storage rules for CSSP Mentor Tracker
+// Secures student resumes and portfolio documents.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+    function isAdmin() { return signedIn() && (role() == 'ADMIN' || role() == 'SUPER_ADMIN'); }
+    function isMentor() { return signedIn() && (role() == 'MENTOR' || role() == 'SENIOR'); }
+    function isStudent() { return signedIn() && (role() == 'STUDENT' || role() == 'JUNIOR'); }
+    function me() { return request.auth.uid; }
+
+    // Resumes storage path: /resumes/{studentUid}/{fileName}
+    match /resumes/{studentUid}/{fileName} {
+      // Students can read their own resume; mentors and admins can view resumes
+      allow read: if signedIn() && (me() == studentUid || isMentor() || isAdmin());
+
+      // Student can upload their own resume: max 10MB, PDF only
+      allow write: if signedIn() && me() == studentUid
+        && request.resource.size < 10 * 1024 * 1024
+        && (request.resource.contentType.matches('application/pdf') || request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document'));
+
+      // Admins can manage documents
+      allow delete: if isAdmin() || (signedIn() && me() == studentUid);
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
