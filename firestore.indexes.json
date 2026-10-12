@@ -14,7 +14,9 @@
     { "collectionGroup": "tasks", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "batchId", "order": "ASCENDING" }, { "fieldPath": "deadline", "order": "DESCENDING" } ] },
     { "collectionGroup": "notifications", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
     { "collectionGroup": "notifications", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "isRead", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
-    { "collectionGroup": "announcements", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "audienceKeys", "arrayConfig": "CONTAINS" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] }
+    { "collectionGroup": "announcements", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "audienceKeys", "arrayConfig": "CONTAINS" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "chats", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "mentorId", "order": "ASCENDING" }, { "fieldPath": "updatedAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "chats", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "studentId", "order": "ASCENDING" }, { "fieldPath": "updatedAt", "order": "DESCENDING" } ] }
   ],
   "fieldOverrides": []
 }

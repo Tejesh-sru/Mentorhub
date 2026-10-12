@@ -3,12 +3,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/sru_branding.dart';
 import '../../core/widgets.dart';
 import '../../data/api.dart';
 import '../../data/providers.dart';
 import '../../models/models.dart';
+
+Future<void> openExternalUrl(BuildContext context, String rawUrl, {String? label}) async {
+  var cleaned = rawUrl.trim();
+  if (cleaned.isEmpty) return;
+  if (cleaned.startsWith('https:/') && !cleaned.startsWith('https://')) {
+    cleaned = cleaned.replaceFirst('https:/', 'https://');
+  } else if (cleaned.startsWith('http:/') && !cleaned.startsWith('http://')) {
+    cleaned = cleaned.replaceFirst('http:/', 'http://');
+  } else if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+    cleaned = 'https://$cleaned';
+  }
+  final uri = Uri.tryParse(cleaned);
+  if (uri != null) {
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    );
+    if (launched) return;
+  }
+  await Clipboard.setData(ClipboardData(text: cleaned));
+  if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${label ?? "Link"} copied to clipboard: $cleaned')),
+    );
+  }
+}
 
 void showMenteeProfileDialog(
   BuildContext context, {
@@ -312,14 +340,9 @@ class _MenteeProfileDialogState extends ConsumerState<MenteeProfileDialog>
                                     children: [
                                       if (a.problemUrl.isNotEmpty)
                                         IconButton(
-                                          tooltip: 'Copy Problem URL',
-                                          icon: const Icon(Icons.link_rounded, size: 18),
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(text: a.problemUrl));
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text('Copied URL: ${a.problemUrl}')),
-                                            );
-                                          },
+                                          tooltip: 'Open Problem URL',
+                                          icon: const Icon(Icons.open_in_new_rounded, size: 18, color: SruColors.primary),
+                                          onPressed: () => openExternalUrl(context, a.problemUrl, label: a.taskTitle),
                                         ),
                                       StatusBadge(a.status),
                                     ],
@@ -374,14 +397,9 @@ class _MenteeProfileDialogState extends ConsumerState<MenteeProfileDialog>
                                   ),
                                   trailing: p.solutionUrl.isNotEmpty
                                       ? OutlinedButton.icon(
-                                          icon: const Icon(Icons.copy_rounded, size: 15),
-                                          label: const Text('Solution Link'),
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(text: p.solutionUrl));
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text('Copied solution URL: ${p.solutionUrl}')),
-                                            );
-                                          },
+                                          icon: const Icon(Icons.open_in_new_rounded, size: 15),
+                                          label: const Text('Open Solution'),
+                                          onPressed: () => openExternalUrl(context, p.solutionUrl, label: 'Solution'),
                                         )
                                       : null,
                                 );
@@ -414,41 +432,37 @@ class _MenteeProfileDialogState extends ConsumerState<MenteeProfileDialog>
 
   Widget _platformChip(BuildContext context, String label, String? url, IconData icon, Color color) {
     final hasUrl = url != null && url.trim().isNotEmpty;
-    return InkWell(
-      onTap: hasUrl
-          ? () {
-              Clipboard.setData(ClipboardData(text: url));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('$label link copied: $url')),
-              );
-            }
-          : null,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: hasUrl ? Colors.white : const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: hasUrl ? color.withOpacity(0.4) : SruColors.border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 15, color: hasUrl ? color : Colors.grey),
-            const SizedBox(width: 6),
-            Text(
-              hasUrl ? label : '$label (Not linked)',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: hasUrl ? SruColors.textPrimary : Colors.grey,
+    return Tooltip(
+      message: hasUrl ? 'Open $label ($url)' : '$label not linked',
+      child: InkWell(
+        onTap: hasUrl ? () => openExternalUrl(context, url, label: label) : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: hasUrl ? Colors.white : const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: hasUrl ? color.withOpacity(0.4) : SruColors.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15, color: hasUrl ? color : Colors.grey),
+              const SizedBox(width: 6),
+              Text(
+                hasUrl ? label : '$label (Not linked)',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: hasUrl ? SruColors.textPrimary : Colors.grey,
+                ),
               ),
-            ),
-            if (hasUrl) ...[
-              const SizedBox(width: 4),
-              Icon(Icons.open_in_new_rounded, size: 12, color: color),
+              if (hasUrl) ...[
+                const SizedBox(width: 4),
+                Icon(Icons.open_in_new_rounded, size: 12, color: color),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -553,8 +567,26 @@ class _SubmissionReviewCardState extends ConsumerState<_SubmissionReviewCard> {
               style: const TextStyle(fontSize: 12, color: SruColors.textSecondary)),
           if (s.solutionUrl != null && s.solutionUrl!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            SelectableText('Solution URL: ${s.solutionUrl}',
-                style: const TextStyle(fontSize: 12, color: SruColors.link)),
+            InkWell(
+              onTap: () => openExternalUrl(context, s.solutionUrl!, label: 'Solution URL'),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.open_in_new_rounded, size: 14, color: SruColors.link),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      'Solution URL: ${s.solutionUrl}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: SruColors.link,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
           const SizedBox(height: 8),
           Row(

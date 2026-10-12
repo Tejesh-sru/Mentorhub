@@ -86,6 +86,16 @@ class StudentHome extends ConsumerWidget {
         // ── CSSP Quick Actions Grid ──
         Wrap(spacing: 10, runSpacing: 10, children: [
           SizedBox(
+            width: 230,
+            child: _ActionTile(
+              title: 'Group Chat 💬',
+              subtitle: 'Mentor & Mentees Room',
+              icon: Icons.forum_rounded,
+              color: SruColors.primary,
+              onTap: () => context.go('/student/chat'),
+            ),
+          ),
+          SizedBox(
             width: 240,
             child: _ActionTile(
               title: 'Problem of the Day 🔥',

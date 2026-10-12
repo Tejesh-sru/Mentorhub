@@ -491,3 +491,113 @@ class Submission {
     );
   }
 }
+
+/// chats/{mentorUid_studentUid} — Private Mentor–Mentee Conversation
+class ChatConversation {
+  const ChatConversation({
+    required this.id,
+    required this.mentorId,
+    required this.mentorName,
+    required this.mentorCode,
+    required this.studentId,
+    required this.studentName,
+    required this.studentCode,
+    this.batchId,
+    this.batchName,
+    this.lastMessage,
+    this.lastSenderId,
+    this.lastSenderRole,
+    this.lastMessageAt,
+    this.unreadForMentor = 0,
+    this.unreadForStudent = 0,
+    this.updatedAt,
+  });
+
+  final String id;
+  final String mentorId;
+  final String mentorName;
+  final String mentorCode;
+  final String studentId;
+  final String studentName;
+  final String studentCode;
+  final String? batchId;
+  final String? batchName;
+  final String? lastMessage;
+  final String? lastSenderId;
+  final String? lastSenderRole;
+  final DateTime? lastMessageAt;
+  final int unreadForMentor;
+  final int unreadForStudent;
+  final DateTime? updatedAt;
+
+  static String chatIdFor(String mentorId, String studentId) => '${mentorId}_$studentId';
+
+  factory ChatConversation.fromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
+    final m = d.data() ?? {};
+    return ChatConversation(
+      id: d.id,
+      mentorId: (m['mentorId'] ?? '') as String,
+      mentorName: (m['mentorName'] ?? '') as String,
+      mentorCode: (m['mentorCode'] ?? '') as String,
+      studentId: (m['studentId'] ?? '') as String,
+      studentName: (m['studentName'] ?? '') as String,
+      studentCode: (m['studentCode'] ?? '') as String,
+      batchId: m['batchId'] as String?,
+      batchName: m['batchName'] as String?,
+      lastMessage: m['lastMessage'] as String?,
+      lastSenderId: m['lastSenderId'] as String?,
+      lastSenderRole: m['lastSenderRole'] as String?,
+      lastMessageAt: _ts(m['lastMessageAt']),
+      unreadForMentor: ((m['unreadForMentor'] ?? 0) as num).toInt(),
+      unreadForStudent: ((m['unreadForStudent'] ?? 0) as num).toInt(),
+      updatedAt: _ts(m['updatedAt']),
+    );
+  }
+}
+
+/// chats/{mentorId}/messages/{messageId}
+class ChatMessage {
+  const ChatMessage({
+    required this.id,
+    required this.chatId,
+    required this.mentorId,
+    required this.studentId,
+    required this.senderId,
+    required this.senderName,
+    required this.senderCode,
+    required this.senderRole,
+    required this.text,
+    required this.isRead,
+    this.createdAt,
+  });
+
+  final String id;
+  final String chatId;
+  final String mentorId;
+  final String studentId;
+  final String senderId;
+  final String senderName;
+  final String senderCode;
+  final String senderRole;
+  final String text;
+  final bool isRead;
+  final DateTime? createdAt;
+
+  factory ChatMessage.fromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
+    final m = d.data() ?? {};
+    return ChatMessage(
+      id: d.id,
+      chatId: (m['chatId'] ?? '') as String,
+      mentorId: (m['mentorId'] ?? '') as String,
+      studentId: (m['studentId'] ?? '') as String,
+      senderId: (m['senderId'] ?? '') as String,
+      senderName: (m['senderName'] ?? '') as String,
+      senderCode: (m['senderCode'] ?? '') as String,
+      senderRole: (m['senderRole'] ?? '') as String,
+      text: (m['text'] ?? '') as String,
+      isRead: m['isRead'] == true,
+      createdAt: _ts(m['createdAt']),
+    );
+  }
+}
+

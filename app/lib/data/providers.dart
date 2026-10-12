@@ -452,4 +452,80 @@ final adminTasksProvider = StreamProvider.autoDispose<List<Task>>((ref) {
       });
 });
 
+// ── Real-Time Mentor–Mentee Chat Providers ──
+
+/// Streams the assigned MentorProfile for the signed-in student.
+final studentAssignedMentorProvider = StreamProvider.autoDispose<MentorProfile?>((ref) {
+  final studentProfile = ref.watch(myStudentProfileProvider).valueOrNull;
+  final mentorId = studentProfile?.mentorId;
+  if (mentorId == null || mentorId.isEmpty) return Stream.value(null);
+  return ref
+      .watch(firestoreProvider)
+      .doc('mentors/$mentorId')
+      .snapshots()
+      .map((d) => d.exists ? MentorProfile.fromDoc(d) : null);
+});
+
+/// Streams all active chat conversations for the signed-in mentor.
+final mentorChatConversationsProvider = StreamProvider.autoDispose<Map<String, ChatConversation>>((ref) {
+  final uid = ref.watch(uidProvider);
+  if (uid == null) return Stream.value(const {});
+  return ref
+      .watch(firestoreProvider)
+      .collection('chats')
+      .where('mentorId', isEqualTo: uid)
+      .snapshots()
+      .map((s) {
+        final map = <String, ChatConversation>{};
+        for (final doc in s.docs) {
+          final conv = ChatConversation.fromDoc(doc);
+          map[conv.studentId] = conv;
+        }
+        return map;
+      });
+});
+
+/// Streams the chat conversation between the signed-in student and their assigned mentor.
+final studentChatConversationProvider = StreamProvider.autoDispose<ChatConversation?>((ref) {
+  final studentProfile = ref.watch(myStudentProfileProvider).valueOrNull;
+  if (studentProfile == null || studentProfile.mentorId == null || studentProfile.mentorId!.isEmpty) {
+    return Stream.value(null);
+  }
+  final chatId = ChatConversation.chatIdFor(studentProfile.mentorId!, studentProfile.uid);
+  return ref
+      .watch(firestoreProvider)
+      .doc('chats/$chatId')
+      .snapshots()
+      .map((d) => d.exists ? ChatConversation.fromDoc(d) : null);
+});
+
+/// Streams all students belonging to a specific Mentor's mentorship group.
+final groupStudentsProvider = StreamProvider.autoDispose.family<List<StudentProfile>, String>((ref, mentorId) {
+  if (mentorId.isEmpty) return Stream.value(const []);
+  return ref
+      .watch(firestoreProvider)
+      .collection('students')
+      .where('mentorId', isEqualTo: mentorId)
+      .snapshots()
+      .map((s) {
+        final list = s.docs.map(StudentProfile.fromDoc).toList();
+        list.sort((a, b) => a.studentCode.compareTo(b.studentCode));
+        return list;
+      });
+});
+
+/// Streams messages in real time for a given mentor group chat ("{mentorUid}").
+final chatMessagesProvider = StreamProvider.autoDispose.family<List<ChatMessage>, String>((ref, chatId) {
+  if (chatId.isEmpty) return Stream.value(const []);
+  return ref
+      .watch(firestoreProvider)
+      .collection('chats/$chatId/messages')
+      .snapshots()
+      .map((s) {
+        final list = s.docs.map(ChatMessage.fromDoc).toList();
+        list.sort((a, b) => (a.createdAt ?? DateTime.now()).compareTo(b.createdAt ?? DateTime.now()));
+        return list;
+      });
+});
+
 

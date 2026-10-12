@@ -136,6 +136,37 @@ service cloud.firestore {
 
     match /uniques/{id} { allow read, write: if isAdmin(); }
 
+    // Mentor–Mentees Real-Time Group Chat
+    // Each Senior Mentor has a dedicated group chat room with all their assigned mentees:
+    // /chats/{mentorId} and /chats/{mentorId}/messages/{messageId}
+    function isMentorGroupMember(mentorId) {
+      return signedIn() && (
+        isAdmin()
+        || me() == mentorId
+        || (
+          exists(/databases/$(database)/documents/students/$(me()))
+          && get(/databases/$(database)/documents/students/$(me())).data.get('mentorId', '') == mentorId
+        )
+      );
+    }
+
+    match /chats/{mentorId} {
+      allow read: if isMentorGroupMember(mentorId);
+      allow create, update: if isMentorGroupMember(mentorId);
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isMentorGroupMember(mentorId);
+        allow create: if isMentorGroupMember(mentorId)
+          && request.resource.data.get('senderId', '') == me()
+          && request.resource.data.get('text', '') is string
+          && request.resource.data.get('text', '').size() > 0
+          && request.resource.data.get('text', '').size() <= 4000;
+        allow update: if isMentorGroupMember(mentorId);
+        allow delete: if isAdmin() || (signedIn() && me() == mentorId);
+      }
+    }
+
     match /{document=**} { allow read, write: if false; }
   }
 }

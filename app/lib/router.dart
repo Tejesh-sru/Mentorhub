@@ -25,6 +25,7 @@ import 'features/mentor/mentor_notifications_page.dart';
 import 'features/mentor/mentor_students_page.dart';
 import 'features/mentor/mentor_submissions_page.dart';
 import 'features/mentor/mentor_tasks_page.dart';
+import 'features/shared/chat_page.dart';
 import 'features/shared/complaints_page.dart';
 import 'features/shared/potd_page.dart';
 import 'features/shell/app_shell.dart';
@@ -75,6 +76,7 @@ const _adminNav = [
 const _mentorNav = [
   NavItem('/mentor/dashboard', 'Dashboard', Icons.speed),
   NavItem('/mentor/students', 'My Juniors', Icons.groups_outlined),
+  NavItem('/mentor/chat', 'Group Chat', Icons.forum_outlined),
   NavItem('/mentor/tasks', 'Tasks & Bulk', Icons.playlist_add_check_rounded),
   NavItem('/mentor/potd', 'Daily POTD', Icons.local_fire_department_rounded),
   NavItem('/mentor/submissions', 'Submissions', Icons.inbox_outlined),
@@ -87,6 +89,7 @@ const _mentorNav = [
 
 const _studentNav = [
   NavItem('/student/dashboard', 'Home', Icons.speed),
+  NavItem('/student/chat', 'Group Chat', Icons.forum_outlined),
   NavItem('/student/potd', 'POTD & Milestones', Icons.local_fire_department_rounded),
   NavItem('/student/tasks', 'My Tasks', Icons.code),
   NavItem('/student/submissions', 'Submissions', Icons.inbox_outlined),
@@ -194,6 +197,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: _routes(_mentorNav, {
           '/mentor/dashboard': const MentorHome(),
           '/mentor/students': const MentorStudentsPage(),
+          '/mentor/chat': const ChatPage(),
           '/mentor/tasks': const MentorTasksPage(),
           '/mentor/potd': const PotdPage(),
           '/mentor/submissions': const MentorSubmissionsPage(),
@@ -214,6 +218,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
         routes: _routes(_studentNav, {
           '/student/dashboard': const StudentHome(),
+          '/student/chat': const ChatPage(),
           '/student/potd': const PotdPage(),
           '/student/tasks': const StudentTasksPage(),
           '/student/submissions': const StudentSubmissionsPage(),

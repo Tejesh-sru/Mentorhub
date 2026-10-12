@@ -356,9 +356,27 @@ class _StudentTileState extends ConsumerState<_StudentTile> {
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          'Mentor: $mentorLabel  •  Tasks: ${s.progress.completed}/${s.progress.assigned}  •  POTD: ${s.potdCount} 🔥 (${s.milestone})',
-          style: const TextStyle(fontSize: 12, color: SruColors.textSecondary, fontWeight: FontWeight.w500),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Mentor: $mentorLabel  •  Tasks: ${s.progress.completed}/${s.progress.assigned}  •  POTD: ${s.potdCount} 🔥 (${s.milestone})',
+              style: const TextStyle(fontSize: 12, color: SruColors.textSecondary, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                _miniLinkPill(context, 'LeetCode', s.leetcode, Icons.code_rounded, const Color(0xFFD97706)),
+                _miniLinkPill(context, 'Codeforces', s.codeforce, Icons.leaderboard_rounded, const Color(0xFF2563EB)),
+                _miniLinkPill(context, 'HackerRank', s.hackerrank, Icons.terminal_rounded, const Color(0xFF059669)),
+                _miniLinkPill(context, 'GitHub', s.github, Icons.hub_rounded, const Color(0xFF1F2937)),
+                _miniLinkPill(context, 'LinkedIn', s.linkedin, Icons.business_center_rounded, const Color(0xFF0284C7)),
+                _miniLinkPill(context, 'Resume', s.resume, Icons.description_rounded, const Color(0xFFDC2626)),
+              ],
+            ),
+          ],
         ),
       ),
       trailing: Row(
@@ -406,6 +424,39 @@ class _StudentTileState extends ConsumerState<_StudentTile> {
                   ],
                 ),
         ],
+      ),
+    );
+  }
+
+  Widget _miniLinkPill(BuildContext context, String label, String? url, IconData icon, Color color) {
+    final hasUrl = url != null && url.trim().isNotEmpty;
+    if (!hasUrl) return const SizedBox.shrink();
+    return Tooltip(
+      message: 'Open $label ($url)',
+      child: InkWell(
+        onTap: () => openExternalUrl(context, url, label: label),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 12, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+              ),
+              const SizedBox(width: 3),
+              Icon(Icons.open_in_new_rounded, size: 10, color: color),
+            ],
+          ),
+        ),
       ),
     );
   }

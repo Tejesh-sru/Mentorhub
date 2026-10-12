@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/format.dart';
 import '../../core/progress.dart';
@@ -21,6 +22,13 @@ class MentorHome extends ConsumerWidget {
     return PageBody(
       title: 'Mentor Dashboard',
       subtitle: 'Monitor mentee progress, review submissions, and manage tasks',
+      actions: [
+        FilledButton.icon(
+          onPressed: () => context.go('/mentor/chat'),
+          icon: const Icon(Icons.forum_outlined, size: 18),
+          label: const Text('Group Chat'),
+        ),
+      ],
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // ── Modern Welcome Banner ──
         Container(

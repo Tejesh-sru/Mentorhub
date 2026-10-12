@@ -360,35 +360,17 @@ class _StudentCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (s.leetcode?.isNotEmpty ?? false)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Tooltip(message: 'LeetCode', child: Icon(Icons.code, size: 16, color: Color(0xFFFFA116))),
-                      ),
+                      _handleIconBtn(context, 'LeetCode', s.leetcode!, Icons.code, const Color(0xFFFFA116)),
                     if (s.codeforce?.isNotEmpty ?? false)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Tooltip(message: 'Codeforces', child: Icon(Icons.military_tech_outlined, size: 16, color: Color(0xFF1877F2))),
-                      ),
+                      _handleIconBtn(context, 'Codeforces', s.codeforce!, Icons.military_tech_outlined, const Color(0xFF1877F2)),
                     if (s.hackerrank?.isNotEmpty ?? false)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Tooltip(message: 'HackerRank', child: Icon(Icons.terminal, size: 16, color: Color(0xFF2EC866))),
-                      ),
+                      _handleIconBtn(context, 'HackerRank', s.hackerrank!, Icons.terminal, const Color(0xFF2EC866)),
                     if (s.github?.isNotEmpty ?? false)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Tooltip(message: 'GitHub', child: Icon(Icons.folder_shared_outlined, size: 16, color: Color(0xFF24292E))),
-                      ),
+                      _handleIconBtn(context, 'GitHub', s.github!, Icons.folder_shared_outlined, const Color(0xFF24292E)),
                     if (s.linkedin?.isNotEmpty ?? false)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Tooltip(message: 'LinkedIn', child: Icon(Icons.work_outline, size: 16, color: Color(0xFF0A66C2))),
-                      ),
+                      _handleIconBtn(context, 'LinkedIn', s.linkedin!, Icons.work_outline, const Color(0xFF0A66C2)),
                     if (s.resume?.isNotEmpty ?? false)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Tooltip(message: 'Resume CV', child: Icon(Icons.description_outlined, size: 16, color: Color(0xFFEA4335))),
-                      ),
+                      _handleIconBtn(context, 'Resume CV', s.resume!, Icons.description_outlined, const Color(0xFFEA4335)),
                   ],
                 ),
                 Row(
@@ -426,6 +408,23 @@ class _StudentCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _handleIconBtn(BuildContext context, String label, String url, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Tooltip(
+        message: 'Open $label ($url)',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(4),
+          onTap: () => openExternalUrl(context, url, label: label),
+          child: Padding(
+            padding: const EdgeInsets.all(2),
+            child: Icon(icon, size: 16, color: color),
+          ),
         ),
       ),
     );
